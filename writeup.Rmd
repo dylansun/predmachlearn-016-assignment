@@ -3,7 +3,7 @@ Classifying Physical Movement Modalities From Accelerometer Data
 
 In this report, we use machine learning algorithms to predict the category of movement that predict the manner in which human did the exercise. based on sensor data[1].
 
-# Obtain the data
+## Obtain the data
 
 ```{r}
 #download.file('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv', 'pml-training.csv', method="wget")
@@ -13,7 +13,7 @@ pmlLabeled <- read.csv('pml-training.csv')
 pmlUnlabeled <- read.csv('pml-testing.csv')
 ```
 
-# Data Partition
+## Data Partition
 
 We separate our labeled data into a train/test set(80%/20%).
 
@@ -25,9 +25,9 @@ pmlTraining <- pmlLabeled[pmlInTraining, ]
 pmlTesting <- pmlLabeled[-pmlInTraining, ]
 ```
 
-# Tidy Data
+## Tidy Data
 
-## Remove empty and NA
+### Remove empty and NA
 ```{r}
 removeEmptyNA <- function(col) { sum(!(is.na(col) | col=="")) }
 ```
@@ -36,7 +36,7 @@ pmlColumnFillCounts <- sapply(pmlTraining, removeEmptyNA )
 pmlFullColumns <- names(pmlColumnFillCounts[pmlColumnFillCounts == length(pmlTraining$classe)])
 ```
 
-## Subset Data
+### Subset Data
 Users action is not related to time, window and the name column is removed.
 
 The label information is also removed. 
@@ -50,18 +50,18 @@ pmlFullColumns <- pmlFullColumns[!pmlFullColumns %in% exclude]
 pmlTrainingTrimmed <- pmlTraining[, pmlFullColumns]
 ```
 
-# Training
+## Training
 
 Train a Generalized Boosted Regression Model with Stochastic Gradient Boosting.
 Using the defaults.
 ```{r}
 pmlTrainControl <- trainControl(method="none")
-pmlTuneGrid <- data.frame(interaction.depth = 2, n.trees = 200, shrinkage = .1)
+pmlTuneGrid <- data.frame(interaction.depth = 4, n.trees = 200, shrinkage = .1)
 pmlModel <- train(pmlTrainingTrimmed, pmlTraining$classe, method="gbm", trControl=pmlTrainControl, tuneGrid=pmlTuneGrid)
 pmlModel
 ```
 
-## Cross Validation
+### Cross Validation
 
 ```{r}
 pmlTestingLabelsPred <- predict(pmlModel, newdata=pmlTesting[, pmlFullColumns])
@@ -75,13 +75,13 @@ pmlConfusionMatrix
 (1 - pmlConfusionMatrix$overall['Accuracy'])[[1]]
 ```
 
-# Prediction
+## Prediction
 
 ```{r}
 pmlAnswers <- predict(pmlModel, newdata=pmlUnlabeled[, pmlFullColumns])
 pmlAnswers
 ```
 
-# Reference
+## Reference
 [1] Ugulino, W.; Cardador, D.; Vega, K.; Velloso, E.; Milidiu, R.; Fuks, H. Wearable Computing: Accelerometers' Data Classification of Body Postures and Movements. Proceedings of 21st Brazilian Symposium on Artificial Intelligence. Advances in Artificial Intelligence - SBIA 2012. In: Lecture Notes in Computer Science. , pp. 52-61. Curitiba, PR: Springer Berlin / Heidelberg, 2012. ISBN 978-3-642-34458-9. DOI: 10.1007/978-3-642-34459-6_6. 
 
