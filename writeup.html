@@ -55,17 +55,16 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <div id="classifying-physical-movement-modalities-from-accelerometer-data" class="section level1">
 <h1>Classifying Physical Movement Modalities From Accelerometer Data</h1>
 <p>In this report, we use machine learning algorithms to predict the category of movement that predict the manner in which human did the exercise. based on sensor data[1].</p>
-</div>
-<div id="obtain-the-data" class="section level1">
-<h1>Obtain the data</h1>
+<div id="obtain-the-data" class="section level2">
+<h2>Obtain the data</h2>
 <pre class="r"><code>#download.file('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv', 'pml-training.csv', method=&quot;wget&quot;)
 pmlLabeled &lt;- read.csv('pml-training.csv')
 
 #download.file('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv', 'pml-testing.csv', method=&quot;wget&quot;)
 pmlUnlabeled &lt;- read.csv('pml-testing.csv')</code></pre>
 </div>
-<div id="data-partition" class="section level1">
-<h1>Data Partition</h1>
+<div id="data-partition" class="section level2">
+<h2>Data Partition</h2>
 <p>We separate our labeled data into a train/test set(80%/20%).</p>
 <pre class="r"><code>library(caret)</code></pre>
 <pre><code>## Loading required package: lattice
@@ -75,16 +74,16 @@ pmlInTraining &lt;- createDataPartition(pmlLabeled$classe, p = 0.8, list = FALSE
 pmlTraining &lt;- pmlLabeled[pmlInTraining, ]
 pmlTesting &lt;- pmlLabeled[-pmlInTraining, ]</code></pre>
 </div>
-<div id="tidy-data" class="section level1">
-<h1>Tidy Data</h1>
-<div id="remove-empty-and-na" class="section level2">
-<h2>Remove empty and NA</h2>
+<div id="tidy-data" class="section level2">
+<h2>Tidy Data</h2>
+<div id="remove-empty-and-na" class="section level3">
+<h3>Remove empty and NA</h3>
 <pre class="r"><code>removeEmptyNA &lt;- function(col) { sum(!(is.na(col) | col==&quot;&quot;)) }</code></pre>
 <pre class="r"><code>pmlColumnFillCounts &lt;- sapply(pmlTraining, removeEmptyNA )
 pmlFullColumns &lt;- names(pmlColumnFillCounts[pmlColumnFillCounts == length(pmlTraining$classe)])</code></pre>
 </div>
-<div id="subset-data" class="section level2">
-<h2>Subset Data</h2>
+<div id="subset-data" class="section level3">
+<h3>Subset Data</h3>
 <p>Users action is not related to time, window and the name column is removed.</p>
 <p>The label information is also removed.</p>
 <pre class="r"><code>exclude &lt;- c(&quot;X&quot;, &quot;user_name&quot;, &quot;raw_timestamp_part_1&quot;, &quot;raw_timestamp_part_2&quot;, &quot;cvtd_timestamp&quot;, &quot;new_window&quot;, &quot;num_window&quot;, &quot;classe&quot;)
@@ -92,11 +91,11 @@ pmlFullColumns &lt;- pmlFullColumns[!pmlFullColumns %in% exclude]</code></pre>
 <pre class="r"><code>pmlTrainingTrimmed &lt;- pmlTraining[, pmlFullColumns]</code></pre>
 </div>
 </div>
-<div id="training" class="section level1">
-<h1>Training</h1>
+<div id="training" class="section level2">
+<h2>Training</h2>
 <p>Train a Generalized Boosted Regression Model with Stochastic Gradient Boosting. Using the defaults.</p>
 <pre class="r"><code>pmlTrainControl &lt;- trainControl(method=&quot;none&quot;)
-pmlTuneGrid &lt;- data.frame(interaction.depth = 2, n.trees = 200, shrinkage = .1)
+pmlTuneGrid &lt;- data.frame(interaction.depth = 4, n.trees = 200, shrinkage = .1)
 pmlModel &lt;- train(pmlTrainingTrimmed, pmlTraining$classe, method=&quot;gbm&quot;, trControl=pmlTrainControl, tuneGrid=pmlTuneGrid)</code></pre>
 <pre><code>## Loading required package: gbm
 ## Loading required package: survival
@@ -112,26 +111,26 @@ pmlModel &lt;- train(pmlTrainingTrimmed, pmlTraining$classe, method=&quot;gbm&qu
 ## Loaded gbm 2.1
 ## Loading required package: plyr</code></pre>
 <pre><code>## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
-##      1        1.6094             nan     0.1000    0.1874
-##      2        1.4893             nan     0.1000    0.1273
-##      3        1.4069             nan     0.1000    0.1016
-##      4        1.3415             nan     0.1000    0.0864
-##      5        1.2858             nan     0.1000    0.0689
-##      6        1.2415             nan     0.1000    0.0676
-##      7        1.1996             nan     0.1000    0.0643
-##      8        1.1599             nan     0.1000    0.0518
-##      9        1.1273             nan     0.1000    0.0423
-##     10        1.1008             nan     0.1000    0.0452
-##     20        0.8979             nan     0.1000    0.0230
-##     40        0.6857             nan     0.1000    0.0107
-##     60        0.5579             nan     0.1000    0.0069
-##     80        0.4721             nan     0.1000    0.0053
-##    100        0.4052             nan     0.1000    0.0034
-##    120        0.3522             nan     0.1000    0.0031
-##    140        0.3076             nan     0.1000    0.0029
-##    160        0.2739             nan     0.1000    0.0013
-##    180        0.2453             nan     0.1000    0.0015
-##    200        0.2207             nan     0.1000    0.0016</code></pre>
+##      1        1.6094             nan     0.1000    0.2630
+##      2        1.4442             nan     0.1000    0.1832
+##      3        1.3282             nan     0.1000    0.1419
+##      4        1.2402             nan     0.1000    0.1346
+##      5        1.1569             nan     0.1000    0.0914
+##      6        1.0995             nan     0.1000    0.0944
+##      7        1.0411             nan     0.1000    0.0770
+##      8        0.9917             nan     0.1000    0.0636
+##      9        0.9522             nan     0.1000    0.0568
+##     10        0.9167             nan     0.1000    0.0634
+##     20        0.6513             nan     0.1000    0.0266
+##     40        0.4322             nan     0.1000    0.0129
+##     60        0.3124             nan     0.1000    0.0071
+##     80        0.2384             nan     0.1000    0.0037
+##    100        0.1911             nan     0.1000    0.0030
+##    120        0.1569             nan     0.1000    0.0020
+##    140        0.1301             nan     0.1000    0.0010
+##    160        0.1108             nan     0.1000    0.0016
+##    180        0.0944             nan     0.1000    0.0007
+##    200        0.0807             nan     0.1000    0.0005</code></pre>
 <pre class="r"><code>pmlModel</code></pre>
 <pre><code>## Stochastic Gradient Boosting 
 ## 
@@ -141,8 +140,8 @@ pmlModel &lt;- train(pmlTrainingTrimmed, pmlTraining$classe, method=&quot;gbm&qu
 ## 
 ## No pre-processing
 ## Resampling: None</code></pre>
-<div id="cross-validation" class="section level2">
-<h2>Cross Validation</h2>
+<div id="cross-validation" class="section level3">
+<h3>Cross Validation</h3>
 <pre class="r"><code>pmlTestingLabelsPred &lt;- predict(pmlModel, newdata=pmlTesting[, pmlFullColumns])
 pmlConfusionMatrix &lt;- confusionMatrix(pmlTestingLabelsPred, pmlTesting$classe)
 pmlConfusionMatrix</code></pre>
@@ -150,50 +149,51 @@ pmlConfusionMatrix</code></pre>
 ## 
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 1092   35    1    0    2
-##          B   15  698   20    6    8
-##          C    5   26  645   26   13
-##          D    2    0   14  603    7
-##          E    2    0    4    8  691
+##          A 1111   13    0    0    0
+##          B    4  739    4    1    3
+##          C    0    7  672   11    1
+##          D    0    0    6  627    1
+##          E    1    0    2    4  716
 ## 
 ## Overall Statistics
 ##                                           
-##                Accuracy : 0.9505          
-##                  95% CI : (0.9433, 0.9571)
+##                Accuracy : 0.9852          
+##                  95% CI : (0.9809, 0.9888)
 ##     No Information Rate : 0.2845          
 ##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
 ##                                           
-##                   Kappa : 0.9374          
-##  Mcnemar's Test P-Value : 8.825e-05       
+##                   Kappa : 0.9813          
+##  Mcnemar's Test P-Value : NA              
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9785   0.9196   0.9430   0.9378   0.9584
-## Specificity            0.9865   0.9845   0.9784   0.9930   0.9956
-## Pos Pred Value         0.9664   0.9344   0.9021   0.9633   0.9801
-## Neg Pred Value         0.9914   0.9808   0.9878   0.9879   0.9907
+## Sensitivity            0.9955   0.9736   0.9825   0.9751   0.9931
+## Specificity            0.9954   0.9962   0.9941   0.9979   0.9978
+## Pos Pred Value         0.9884   0.9840   0.9725   0.9890   0.9903
+## Neg Pred Value         0.9982   0.9937   0.9963   0.9951   0.9984
 ## Prevalence             0.2845   0.1935   0.1744   0.1639   0.1838
-## Detection Rate         0.2784   0.1779   0.1644   0.1537   0.1761
-## Detection Prevalence   0.2880   0.1904   0.1823   0.1596   0.1797
-## Balanced Accuracy      0.9825   0.9521   0.9607   0.9654   0.9770</code></pre>
+## Detection Rate         0.2832   0.1884   0.1713   0.1598   0.1825
+## Detection Prevalence   0.2865   0.1914   0.1761   0.1616   0.1843
+## Balanced Accuracy      0.9954   0.9849   0.9883   0.9865   0.9954</code></pre>
+</div>
 <div id="out-of-sample-error" class="section level3">
 <h3>Out-of-sample error</h3>
 <pre class="r"><code>(1 - pmlConfusionMatrix$overall['Accuracy'])[[1]]</code></pre>
-<pre><code>## [1] 0.04945195</code></pre>
+<pre><code>## [1] 0.0147846</code></pre>
 </div>
 </div>
-</div>
-<div id="prediction" class="section level1">
-<h1>Prediction</h1>
+<div id="prediction" class="section level2">
+<h2>Prediction</h2>
 <pre class="r"><code>pmlAnswers &lt;- predict(pmlModel, newdata=pmlUnlabeled[, pmlFullColumns])
 pmlAnswers</code></pre>
 <pre><code>##  [1] B A B A A E D B A A B C B A E E A B B B
 ## Levels: A B C D E</code></pre>
 </div>
-<div id="reference" class="section level1">
-<h1>Reference</h1>
+<div id="reference" class="section level2">
+<h2>Reference</h2>
 <p>[1] Ugulino, W.; Cardador, D.; Vega, K.; Velloso, E.; Milidiu, R.; Fuks, H. Wearable Computing: Accelerometers’ Data Classification of Body Postures and Movements. Proceedings of 21st Brazilian Symposium on Artificial Intelligence. Advances in Artificial Intelligence - SBIA 2012. In: Lecture Notes in Computer Science. , pp. 52-61. Curitiba, PR: Springer Berlin / Heidelberg, 2012. ISBN 978-3-642-34458-9. DOI: 10.1007/978-3-642-34459-6_6.</p>
+</div>
 </div>
 
 
