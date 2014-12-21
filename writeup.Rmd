@@ -1,0 +1,88 @@
+Classifying Physical Movement Modalities From Accelerometer Data
+========================================================
+
+In this report, we use machine learning algorithms to predict the category of movement that predict the manner in which human did the exercise. based on sensor data[1].
+
+# Obtain the data
+
+```{r}
+#download.file('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv', 'pml-training.csv', method="wget")
+pmlLabeled <- read.csv('pml-training.csv')
+
+#download.file('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv', 'pml-testing.csv', method="wget")
+pmlUnlabeled <- read.csv('pml-testing.csv')
+```
+
+# Data Partition
+
+We separate our labeled data into a train/test set(80%/20%).
+
+```{r}
+library(caret)
+set.seed(1009)
+pmlInTraining <- createDataPartition(pmlLabeled$classe, p = 0.8, list = FALSE)
+pmlTraining <- pmlLabeled[pmlInTraining, ]
+pmlTesting <- pmlLabeled[-pmlInTraining, ]
+```
+
+# Tidy Data
+
+## Remove empty and NA
+```{r}
+removeEmptyNA <- function(col) { sum(!(is.na(col) | col=="")) }
+```
+```{r}
+pmlColumnFillCounts <- sapply(pmlTraining, removeEmptyNA )
+pmlFullColumns <- names(pmlColumnFillCounts[pmlColumnFillCounts == length(pmlTraining$classe)])
+```
+
+## Subset Data
+Users action is not related to time, window and the name column is removed.
+
+The label information is also removed. 
+
+```{r}
+exclude <- c("X", "user_name", "raw_timestamp_part_1", "raw_timestamp_part_2", "cvtd_timestamp", "new_window", "num_window", "classe")
+pmlFullColumns <- pmlFullColumns[!pmlFullColumns %in% exclude]
+```
+
+```{r}
+pmlTrainingTrimmed <- pmlTraining[, pmlFullColumns]
+```
+
+# Training
+
+Train a Generalized Boosted Regression Model with Stochastic Gradient Boosting.
+Using the defaults.
+```{r}
+pmlTrainControl <- trainControl(method="none")
+pmlTuneGrid <- data.frame(interaction.depth = 2, n.trees = 100, shrinkage = .1)
+
+pmlModel <- train(pmlTrainingTrimmed, pmlTraining$classe, method="gbm", trControl=pmlTrainControl, tuneGrid=pmlTuneGrid)
+pmlModel
+```
+
+## Cross Validation
+
+```{r}
+pmlTestingLabelsPred <- predict(pmlModel, newdata=pmlTesting[, pmlFullColumns])
+pmlConfusionMatrix <- confusionMatrix(pmlTestingLabelsPred, pmlTesting$classe)
+pmlConfusionMatrix
+```
+
+### Out-of-sample error
+
+```{r}
+(1 - pmlConfusionMatrix$overall['Accuracy'])[[1]]
+```
+
+# Prediction
+
+```{r}
+pmlAnswers <- predict(pmlModel, newdata=pmlUnlabeled[, pmlFullColumns])
+pmlAnswers
+```
+
+# Reference
+[1] Ugulino, W.; Cardador, D.; Vega, K.; Velloso, E.; Milidiu, R.; Fuks, H. Wearable Computing: Accelerometers' Data Classification of Body Postures and Movements. Proceedings of 21st Brazilian Symposium on Artificial Intelligence. Advances in Artificial Intelligence - SBIA 2012. In: Lecture Notes in Computer Science. , pp. 52-61. Curitiba, PR: Springer Berlin / Heidelberg, 2012. ISBN 978-3-642-34458-9. DOI: 10.1007/978-3-642-34459-6_6. 
+
