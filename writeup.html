@@ -96,8 +96,7 @@ pmlFullColumns &lt;- pmlFullColumns[!pmlFullColumns %in% exclude]</code></pre>
 <h1>Training</h1>
 <p>Train a Generalized Boosted Regression Model with Stochastic Gradient Boosting. Using the defaults.</p>
 <pre class="r"><code>pmlTrainControl &lt;- trainControl(method=&quot;none&quot;)
-pmlTuneGrid &lt;- data.frame(interaction.depth = 2, n.trees = 100, shrinkage = .1)
-
+pmlTuneGrid &lt;- data.frame(interaction.depth = 2, n.trees = 200, shrinkage = .1)
 pmlModel &lt;- train(pmlTrainingTrimmed, pmlTraining$classe, method=&quot;gbm&quot;, trControl=pmlTrainControl, tuneGrid=pmlTuneGrid)</code></pre>
 <pre><code>## Loading required package: gbm
 ## Loading required package: survival
@@ -127,7 +126,12 @@ pmlModel &lt;- train(pmlTrainingTrimmed, pmlTraining$classe, method=&quot;gbm&qu
 ##     40        0.6857             nan     0.1000    0.0107
 ##     60        0.5579             nan     0.1000    0.0069
 ##     80        0.4721             nan     0.1000    0.0053
-##    100        0.4052             nan     0.1000    0.0034</code></pre>
+##    100        0.4052             nan     0.1000    0.0034
+##    120        0.3522             nan     0.1000    0.0031
+##    140        0.3076             nan     0.1000    0.0029
+##    160        0.2739             nan     0.1000    0.0013
+##    180        0.2453             nan     0.1000    0.0015
+##    200        0.2207             nan     0.1000    0.0016</code></pre>
 <pre class="r"><code>pmlModel</code></pre>
 <pre><code>## Stochastic Gradient Boosting 
 ## 
@@ -146,37 +150,37 @@ pmlConfusionMatrix</code></pre>
 ## 
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 1065   65    9    6    2
-##          B   23  645   29    8   17
-##          C    6   42  626   49   33
-##          D   16    4   16  562   10
-##          E    6    3    4   18  659
+##          A 1092   35    1    0    2
+##          B   15  698   20    6    8
+##          C    5   26  645   26   13
+##          D    2    0   14  603    7
+##          E    2    0    4    8  691
 ## 
 ## Overall Statistics
 ##                                           
-##                Accuracy : 0.9067          
-##                  95% CI : (0.8972, 0.9156)
+##                Accuracy : 0.9505          
+##                  95% CI : (0.9433, 0.9571)
 ##     No Information Rate : 0.2845          
 ##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
 ##                                           
-##                   Kappa : 0.8819          
-##  Mcnemar's Test P-Value : 1.641e-13       
+##                   Kappa : 0.9374          
+##  Mcnemar's Test P-Value : 8.825e-05       
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9543   0.8498   0.9152   0.8740   0.9140
-## Specificity            0.9708   0.9757   0.9599   0.9860   0.9903
-## Pos Pred Value         0.9285   0.8934   0.8280   0.9243   0.9551
-## Neg Pred Value         0.9816   0.9644   0.9817   0.9756   0.9808
+## Sensitivity            0.9785   0.9196   0.9430   0.9378   0.9584
+## Specificity            0.9865   0.9845   0.9784   0.9930   0.9956
+## Pos Pred Value         0.9664   0.9344   0.9021   0.9633   0.9801
+## Neg Pred Value         0.9914   0.9808   0.9878   0.9879   0.9907
 ## Prevalence             0.2845   0.1935   0.1744   0.1639   0.1838
-## Detection Rate         0.2715   0.1644   0.1596   0.1433   0.1680
-## Detection Prevalence   0.2924   0.1840   0.1927   0.1550   0.1759
-## Balanced Accuracy      0.9625   0.9127   0.9375   0.9300   0.9522</code></pre>
+## Detection Rate         0.2784   0.1779   0.1644   0.1537   0.1761
+## Detection Prevalence   0.2880   0.1904   0.1823   0.1596   0.1797
+## Balanced Accuracy      0.9825   0.9521   0.9607   0.9654   0.9770</code></pre>
 <div id="out-of-sample-error" class="section level3">
 <h3>Out-of-sample error</h3>
 <pre class="r"><code>(1 - pmlConfusionMatrix$overall['Accuracy'])[[1]]</code></pre>
-<pre><code>## [1] 0.09329595</code></pre>
+<pre><code>## [1] 0.04945195</code></pre>
 </div>
 </div>
 </div>
@@ -184,7 +188,7 @@ pmlConfusionMatrix</code></pre>
 <h1>Prediction</h1>
 <pre class="r"><code>pmlAnswers &lt;- predict(pmlModel, newdata=pmlUnlabeled[, pmlFullColumns])
 pmlAnswers</code></pre>
-<pre><code>##  [1] B A B A A E D B A A B C B A E E A B A B
+<pre><code>##  [1] B A B A A E D B A A B C B A E E A B B B
 ## Levels: A B C D E</code></pre>
 </div>
 <div id="reference" class="section level1">

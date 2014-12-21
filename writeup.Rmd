@@ -56,8 +56,7 @@ Train a Generalized Boosted Regression Model with Stochastic Gradient Boosting.
 Using the defaults.
 ```{r}
 pmlTrainControl <- trainControl(method="none")
-pmlTuneGrid <- data.frame(interaction.depth = 2, n.trees = 100, shrinkage = .1)
-
+pmlTuneGrid <- data.frame(interaction.depth = 2, n.trees = 200, shrinkage = .1)
 pmlModel <- train(pmlTrainingTrimmed, pmlTraining$classe, method="gbm", trControl=pmlTrainControl, tuneGrid=pmlTuneGrid)
 pmlModel
 ```
